@@ -1,0 +1,51 @@
+/**
+ * Sends the contents of a cell or text to ChatGPT as a prompt
+ * @param {String} input The prompt to send.
+ * @return ChatGPT Response.
+ * @customfunction
+ */
+function ChatGPT(input) {
+  console.log(input)
+  const systemContent = "You are a helpful assistant.";
+  return Array.isArray(input) ?
+    input.flat().map(text => fetchData(systemContent, text)) :
+    fetchData(systemContent, input);
+}
+
+// This function runs automatically when the presentation is opened, adding the custom menu.
+function onOpen() {
+  SlidesApp.getUi().createMenu('ChatGPT')
+    .addItem('Ask ChatGPT', 'showPromptDialog')
+    .addToUi();
+}
+
+// This function shows a dialog asking the user for input to send to ChatGPT.
+function showPromptDialog() {
+  var ui = SlidesApp.getUi();
+  var result = ui.prompt('Ask ChatGPT', 'Enter your question or prompt:', ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  if (result.getSelectedButton() == ui.Button.OK) {
+    var userInput = result.getResponseText();
+    if (userInput) {
+      callChatGPTAndInsertResponse(userInput);
+    }
+  }
+}
+
+// This function calls the ChatGPT function and inserts the response into the current slide.
+function callChatGPTAndInsertResponse(input) {
+  var response = ChatGPT(input); // Assuming this function is asynchronous, you might need to handle it accordingly.
+  insertTextInSlide(response);
+}
+
+// Helper function to insert text into the current slide.
+function insertTextInSlide(text) {
+  var slide = SlidesApp.getActivePresentation().getSelection().getCurrentPage();
+  if (slide) {
+    // Attempt to insert text into a new text box. Adjust the size and position as needed.
+    slide.insertTextBox(text, 100, 100, 300, 100); // x, y, width, height in points
+  } else {
+    SlidesApp.getUi().alert('Please select a slide to insert the text.');
+  }
+}
